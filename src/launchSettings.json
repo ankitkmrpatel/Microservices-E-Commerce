@@ -1,0 +1,17 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "catalog.api": "StartDebugging",
+        "basket.api": "StartDebugging",
+        "discount.api": "StartDebugging",
+        "order.api": "StartDebugging",
+        "shopping.api.gw.yarp": "StartDebugging",
+        "shopping.api.gw.ocelot": "StartDebugging",
+        "shopping.api.aggregator": "StartDebugging"
+      }
+    }
+  }
+}

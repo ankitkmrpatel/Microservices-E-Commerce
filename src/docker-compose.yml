@@ -1,0 +1,58 @@
+version: '3.4'
+
+services:
+  catalog.db:
+    image: postgres
+
+  basket.db:
+    image: postgres  
+    
+  shoppingdb.distributedcache:
+    image: redis:alpine
+
+  shoppingdb.messagebroker:
+    image: rabbitmq:3-management-alpine
+
+  order.db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+
+  catalog.api:
+    image: ${DOCKER_REGISTRY-}catalogapi
+    build:
+      context: .
+      dockerfile: Services/Catalog/Catalog.API/Dockerfile
+
+  basket.api:
+    image: ${DOCKER_REGISTRY-}basketapi
+    build:
+      context: .
+      dockerfile: Services/Basket/Basket.API/Dockerfile
+
+  discount.api:
+    image: ${DOCKER_REGISTRY-}discountapi
+    build:
+      context: .
+      dockerfile: Services/Discount/Discount.API/Dockerfile
+
+  order.api:
+    image: ${DOCKER_REGISTRY-}orderapi
+    build:
+      context: .
+      dockerfile: Services/Order/Order.API/Dockerfile
+
+  shopping.api.gw.yarp:
+    image: ${DOCKER_REGISTRY-}shoppingapigwyarp
+    build:
+      context: .
+      dockerfile: Gateways/Shopping.API.GW.Yarp/Dockerfile
+
+  # shopping.api.gw.ocelot:
+  #   image: ${DOCKER_REGISTRY-}shoppingapigwocelot
+  #   build:
+  #     context: .
+  #     dockerfile: Gateways/Shopping.API.GW.Ocelot/Dockerfile
+
+volumes:
+  postgres_catalog_data:
+  postgres_basket_data:
+  pgadmin_data:  

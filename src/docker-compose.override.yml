@@ -1,0 +1,174 @@
+version: '3.4'
+
+services:
+  catalog.db:
+    container_name: catalog.db
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=G17Hub@2321
+      - POSTGRES_DB=CatalogDb
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_catalog_data:/var/lib/postgresql/data
+
+  basket.db:
+    container_name: basket.db
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=G17Hub@2321
+      - POSTGRES_DB=CatalogDb
+    restart: always
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_basket_data:/var/lib/postgresql/data
+
+  shoppingdb.distributedcache:
+    container_name: shoppingdb.distributedcache
+    restart: always
+    ports:
+      - "6379:6379"
+
+  shoppingdb.messagebroker:     
+    container_name: shoppingdb.messagebroker
+    hostname: ecommerce-mq
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=ankit@sflhub.com
+      - RABBITMQ_DEFAULT_PASS=G17Hub@2321
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  order.db:
+    container_name: order.db
+    environment:
+      - MSSQL_SA_PASSWORD=G17Hub@2321
+      - ACCEPT_EULA=Y
+    restart: always
+    ports:
+      - "1433:1433"
+
+
+  catalog.api:
+    container_name: catalog.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - "ConnectionStrings__CatalogDatabase=Server=catalog.db;Port=5432;Database=CatalogDb;User Id=admin;Password=G17Hub@2321;"
+    depends_on:
+      - catalog.db
+    ports:
+      - "6000:8080"
+      - "6060:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  basket.api:
+    container_name: basket.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - "ConnectionStrings__BasketDatabase=Server=basket.db;Port=5433;Database=BasketDb;User Id=admin;Password=G17Hub@2321;Include Error Detail=true"
+      - "ConnectionStrings__RedisDatabase=shoppingdb.distributedcache:6379"
+      - "GrpcSettings__DiscountUrl=https://discount.api:8081"
+      - MessageBroker__Host=amqp://shoppingdb.messagebroker:5672
+      - MessageBroker__UserName=ankit@sflhub.com
+      - MessageBroker__Password=G17Hub@2321
+    depends_on:
+      - basket.db
+      - shoppingdb.distributedcache
+      - discount.api
+      - shoppingdb.messagebroker
+    ports:
+      - "6001:8080"
+      - "6061:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  discount.api:
+    container_name: discount.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - "ConnectionStrings__DiscountDatabase=Data Source=discountdb"
+    ports:
+      - "6002:8080"
+      - "6062:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  order.api:
+    container_name: order.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - "ConnectionStrings__OrderDatabase=Server=order.db;Database=OrderDb;User Id=sa;Password=G17Hub@2321;Encrypt=False;TrustServerCertificate=True"
+      - MessageBroker__Host=amqp://shoppingdb.messagebroker:5672
+      - MessageBroker__UserName=ankit@sflhub.com
+      - MessageBroker__Password=G17Hub@2321
+      - FeatureManagement__OrderFullfilment=false
+    depends_on:
+      - order.db
+      - shoppingdb.messagebroker
+    ports:
+      - "6003:8080"
+      - "6063:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  shopping.api.gw.yarp:
+    container_name: shopping.api.gw.yarp
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+    depends_on:
+      - catalog.api
+      - basket.api
+      - order.api
+    ports:
+      - "6004:8080"
+      - "6064:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+      
+  # shopping.api.gw.ocelot:
+  #   container_name: shopping.api.gw.ocelot
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_HTTP_PORTS=8080
+  #     - ASPNETCORE_HTTPS_PORTS=8081
+  #   ports:
+  #     - "6005:8080"
+  #     - "6065:8081"
+  #   volumes:
+  #     - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+  #     - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  # shopping.api.aggregator:
+  #   container_name: shopping.api.aggregator
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_HTTP_PORTS=8080
+  #     - "ApiSettings:CatalogUrl=http://host.docker.internal:8000"
+  #     - "ApiSettings:BasketUrl=http://host.docker.internal:8001"
+  #     - "ApiSettings:OrderingUrl=http://host.docker.internal:8004"
+  #     - "ElasticConfiguration:Uri=http://elasticsearch:9200"
+  #   depends_on:
+  #     - catalog.api
+  #     - basket.api
+  #     - ordering.api
+  #   ports:
+  #     - "8005:8080"
