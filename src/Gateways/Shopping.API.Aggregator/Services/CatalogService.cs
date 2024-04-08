@@ -9,19 +9,19 @@ public class CatalogService(HttpClient client) : ICatalogService
 
     public async Task<IEnumerable<CatalogModel>> GetCatalog()
     {
-        var response = await _client.GetAsync("/products");
+        var response = await _client.GetAsync("/Catalog");
         return await response.ReadContentAs<List<CatalogModel>>();
     }
 
     public async Task<CatalogModel> GetCatalog(string id)
     {
-        var response = await _client.GetAsync($"/products/{id}");
+        var response = await _client.GetAsync($"/Catalog/{id}");
         return await response.ReadContentAs<CatalogModel>();
     }
 
     public async Task<IEnumerable<CatalogModel>> GetCatalogByCategory(string category)
     {
-        var response = await _client.GetAsync($"/products/category/{category}");
+        var response = await _client.GetAsync($"/Catalog/GetProductByCategory/{category}");
         return await response.ReadContentAs<List<CatalogModel>>();
     }
 }

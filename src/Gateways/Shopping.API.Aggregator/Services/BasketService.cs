@@ -10,7 +10,7 @@ public class BasketService(HttpClient client) : IBasketService
 
     public async Task<BasketModel> GetBasket(string userName)
     {
-        var response = await _client.GetAsync($"/basket/{userName}");
+        var response = await _client.GetAsync($"/Basket/{userName}");
         return await response.ReadContentAs<BasketModel>();
     }
 }

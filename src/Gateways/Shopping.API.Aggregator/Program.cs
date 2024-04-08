@@ -1,3 +1,4 @@
+using Common.Logging;
 using Polly.Extensions.Http;
 using Polly;
 using Serilog;
@@ -6,12 +7,11 @@ using Shopping.API.Aggregator.Services;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using HealthChecks.UI.Client;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using BuildingBlocks.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-//builder.Host.UseSerilog(SeriLogger.Configure);
+builder.Host.UseSerilog(SeriLogger.Configure);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

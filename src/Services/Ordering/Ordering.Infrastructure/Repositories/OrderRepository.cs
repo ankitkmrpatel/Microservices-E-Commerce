@@ -1,0 +1,20 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Ordering.Application.Contracts.Persistence;
+using Ordering.Domain.Entities;
+using Ordering.Infrastructure.Persistence;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Ordering.Infrastructure.Repositories;
+
+public class OrderRepository(OrderContext dbContext) : RepositoryBase<Order>(dbContext), IOrderRepository
+{
+    public async Task<IEnumerable<Order>> GetOrdersByUserName(string userName)
+    {
+        var orderList = await _dbContext.Orders
+                            .Where(o => o.UserName == userName)
+                            .ToListAsync();
+        return orderList;
+    }
+}

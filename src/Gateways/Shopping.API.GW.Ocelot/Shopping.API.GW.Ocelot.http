@@ -1,6 +1,0 @@
-@Shopping.API.GW.Ocelot_HostAddress = http://localhost:5253
-
-GET {{Shopping.API.GW.Ocelot_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

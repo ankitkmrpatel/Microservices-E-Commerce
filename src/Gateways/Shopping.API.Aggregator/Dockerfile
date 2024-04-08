@@ -9,7 +9,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Gateways/Shopping.API.Aggregator/Shopping.API.Aggregator.csproj", "Gateways/Shopping.API.Aggregator/"]
-COPY ["BuildingBlocks/BuildingBlocks.Logging/BuildingBlocks.Logging.csproj", "BuildingBlocks/BuildingBlocks.Logging/"]
+COPY ["BuildingBlocks/Common.Logging/Common.Logging.csproj", "BuildingBlocks/Common.Logging/"]
 RUN dotnet restore "./Gateways/Shopping.API.Aggregator/./Shopping.API.Aggregator.csproj"
 COPY . .
 WORKDIR "/src/Gateways/Shopping.API.Aggregator"
